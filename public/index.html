@@ -183,6 +183,22 @@
             background: white;
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
         }
+
+        /* ======================================================
+            Stacked layout (<=1024px)
+            Increase CARD FRAME height (not inner elements)
+            ====================================================== */
+        @media (max-width: 1024px) {
+            /* 2. Map / 방문 장소 관리 (지도 + 리스트) */
+            .map-section.card {
+            min-height: 900px;
+            }
+
+            /* 3. 여행 일정 (Google Calendar iframe) */
+            .calendar-container {
+            padding-bottom: 140%;
+            }
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -882,16 +898,6 @@
         function toggleLoading(show) {
             document.getElementById('loading').style.display = show ? 'flex' : 'none';
         }
-
-       window.onload = () => {
-            loadAllData();
-            // "시트에서 CRUD해도 대시보드에서 업데이트"를 위한 최소 구현: 주기적 리로드(예: 60초)
-            // 운영에서 과도한 트래픽이 문제면 interval을 늘리거나, 저장 직후만 refresh 하는 방식으로 조정하십시오.
-            setInterval(() => {
-                // 사용자가 편집 중일 수 있으니 로딩 오버레이는 띄우지 않음(조용히 동기화)
-                loadAllData().catch(() => {});
-            }, 60000);
-        };
     </script>
 </body>
 </html>
