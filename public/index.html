@@ -199,6 +199,105 @@
             padding-bottom: 140%;
             }
         }
+
+        /* ======================================================
+            Checklist: 줄바꿈 없이 한 줄로 표시
+            ====================================================== */
+        #checklist-container > div {
+            flex-wrap: nowrap;
+            min-width: 0;
+        }
+        #checklist-container .editable-input {
+            min-width: 0;
+            width: 0;
+            flex: 1 1 0%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ======================================================
+            Mobile view (<=400px)
+            Fix checklist and settlement table overflow
+            ====================================================== */
+        @media (max-width: 400px) {
+            /* 체크리스트: 줄바꿈 없이 한 줄로 표시, 삭제 버튼 항상 표시 */
+            #checklist-container {
+                overflow-x: auto;
+            }
+            #checklist-container > div {
+                flex-wrap: nowrap;
+                gap: 8px;
+                min-width: 0;
+            }
+            #checklist-container .editable-input {
+                min-width: 0;
+                width: 0;
+                flex: 1 1 0%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            #checklist-container button[onclick*="deleteChecklistRow"] {
+                opacity: 1 !important;
+                flex-shrink: 0;
+            }
+            #checklist-container .flex.gap-1 {
+                flex-shrink: 0;
+            }
+
+            /* 정산 현황: 테이블 컬럼 너비 동적 조정 */
+            #settlement-table-wrapper {
+                overflow-x: auto;
+            }
+            #settlement-table {
+                table-layout: auto;
+                width: 100%;
+                min-width: 100%;
+            }
+            #settlement-table th,
+            #settlement-table td {
+                padding: 8px 4px;
+                white-space: nowrap;
+            }
+            #settlement-table th:nth-child(1),
+            #settlement-table td:nth-child(1) {
+                min-width: 80px;
+                max-width: 120px;
+                white-space: normal;
+                word-break: break-word;
+            }
+            #settlement-table th:nth-child(2),
+            #settlement-table td:nth-child(2) {
+                min-width: 60px;
+                max-width: 80px;
+            }
+            #settlement-table th:nth-child(3),
+            #settlement-table td:nth-child(3) {
+                min-width: 40px;
+                max-width: 50px;
+            }
+            #settlement-table th:nth-child(4),
+            #settlement-table td:nth-child(4) {
+                min-width: 40px;
+                max-width: 50px;
+            }
+            #settlement-table th:nth-child(5),
+            #settlement-table td:nth-child(5) {
+                min-width: 30px;
+                max-width: 40px;
+                opacity: 1 !important;
+            }
+            #settlement-table tbody .editable-input {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+            }
+            #settlement-table tbody td:nth-child(2) .editable-input {
+                width: 100%;
+                max-width: 70px;
+            }
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -339,8 +438,8 @@
                         </h2>
                         <button onclick="addNewSettlementRow()" class="text-[10px] bg-green-50 text-green-600 px-3 py-1 rounded-full font-bold hover:bg-green-100 transition-colors uppercase">+ 항목 추가</button>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-xs text-left">
+                    <div class="overflow-x-auto" id="settlement-table-wrapper">
+                        <table class="w-full text-xs text-left" id="settlement-table">
                             <thead class="text-gray-400 border-b border-gray-100 uppercase">
                                 <tr>
                                     <th class="py-3 px-1">항목</th>
