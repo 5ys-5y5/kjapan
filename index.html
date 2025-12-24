@@ -20,44 +20,24 @@
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 12px;
-        }
-        .calendar-container {
-            position: relative;
-            padding-bottom: 65%; /* 뷰 높이 조정 */
-            height: 0;
             overflow: hidden;
-            border-radius: 8px;
-        }
-        .calendar-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
         }
         .loading-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.8);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            flex-direction: column;
         }
         .checkbox-custom {
-            width: 22px;
-            height: 22px;
+            width: 22px; height: 22px;
             border: 2px solid #d1d5db;
             border-radius: 6px;
             cursor: pointer;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             transition: all 0.2s;
         }
         .checkbox-custom.checked {
@@ -65,14 +45,26 @@
             border-color: #2563eb;
             color: white;
         }
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+            padding-bottom: 1.5rem;
+            border-left: 2px solid #e5e7eb;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -7px; top: 0;
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: #2563eb;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
     <div id="loading" class="loading-overlay">
-        <div class="flex flex-col items-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <p class="mt-4 font-semibold text-gray-600">시트 데이터 동기화 중...</p>
-        </div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p class="mt-4 font-semibold text-gray-600">데이터를 시트와 동기화 중입니다...</p>
     </div>
 
     <div class="max-w-7xl mx-auto">
@@ -80,45 +72,63 @@
         <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight mb-2">K-JAPAN Travel Dashboard</h1>
-                <p class="text-gray-500 font-medium">시트와 양방향 연동되는 실시간 여행 관리 도구</p>
+                <p class="text-gray-500 font-medium italic">Google Apps Script 실시간 연동 중</p>
             </div>
             <div class="flex gap-2">
                 <button onclick="fetchAllData()" class="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 flex items-center gap-2 transition-all">
                     <i class="fas fa-sync-alt"></i> 새로고침
                 </button>
                 <a href="https://docs.google.com/spreadsheets/d/15hhCANDFSHD32TvYmdDBfD86N7TUpUoOyOMPOJGJ-FM/edit" target="_blank" 
-                   class="px-4 py-2 bg-primary-blue text-white rounded-lg text-sm font-semibold hover:bg-blue-700 flex items-center gap-2 shadow-sm transition-all">
-                    <i class="fas fa-table"></i> 원본 시트 열기
+                   class="px-4 py-2 bg-primary-blue text-white rounded-lg text-sm font-semibold hover:bg-blue-700 flex items-center gap-2 shadow-sm">
+                    <i class="fas fa-external-link-alt"></i> 시트 열기
                 </a>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
             <div class="lg:col-span-2 space-y-8">
-                <!-- 1. Calendar (Fixed to Trip Dates) -->
+                <!-- 1. 커스텀 일정표 -->
                 <section class="card p-6">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-xl font-bold flex items-center gap-2">
                             <span class="w-1.5 h-6 bg-primary-blue rounded-full"></span>
-                            여행 일정 (12/26 - 12/29)
+                            여행 타임라인 (12/26 - 12/29)
                         </h2>
                     </div>
-                    <div class="calendar-container">
-                        <!-- Dates parameter added to fix the view -->
-                        <iframe src="https://calendar.google.com/calendar/embed?src=c_f3ec8233744c4dfd0260f6441901cc1e75d2c4a53ae206f9fd1ce0b2f16a4875%40group.calendar.google.com&ctz=Asia%2FSeoul&mode=WEEK&dates=20251226/20251230&bgcolor=%23ffffff&showTitle=0&showNav=0&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0" 
-                                style="border-width:0" frameborder="0" scrolling="no"></iframe>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <h3 class="font-bold text-blue-600 flex items-center gap-2"><i class="fas fa-plane-departure"></i> 12/26 (목) - 출발</h3>
+                            <div class="timeline-item">
+                                <p class="text-sm font-bold">공항 미팅 및 출국</p>
+                                <p class="text-xs text-gray-400">나리타 도착 및 시부야 이동</p>
+                            </div>
+                            <div class="timeline-item border-none">
+                                <p class="text-sm font-bold">시부야 스카이 관람</p>
+                                <p class="text-xs text-gray-400">일몰 시간 맞춰 입장</p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <h3 class="font-bold text-blue-600 flex items-center gap-2"><i class="fas fa-mountain"></i> 12/27 (금) - 후지큐</h3>
+                            <div class="timeline-item">
+                                <p class="text-sm font-bold">후지큐행 버스 탑승</p>
+                                <p class="text-xs text-gray-400">신주쿠 버스터미널 출발</p>
+                            </div>
+                            <div class="timeline-item border-none">
+                                <p class="text-sm font-bold">후지큐 하이랜드</p>
+                                <p class="text-xs text-gray-400">오는 버스 예약 시간 엄수</p>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                <!-- 2. Settlement Detail -->
+                <!-- 2. 정산 내역 관리 -->
                 <section class="card p-6">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-xl font-bold flex items-center gap-2">
                             <span class="w-1.5 h-6 bg-primary-blue rounded-full"></span>
                             정산 내역 관리
                         </h2>
-                        <button onclick="addNewSettlementRow()" class="text-xs font-bold text-blue-600 hover:underline">+ 항목 추가</button>
+                        <button onclick="addNewSettlementRow()" class="px-3 py-1 bg-blue-50 text-blue-600 rounded-md text-xs font-bold hover:bg-blue-100">+ 항목 추가</button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left">
@@ -126,13 +136,12 @@
                                 <tr>
                                     <th class="py-3 px-2">사용 내역</th>
                                     <th class="py-3 px-2 text-right">총 비용</th>
-                                    <th class="py-3 px-2 text-center w-24">결제완료</th>
-                                    <th class="py-3 px-2 text-right">개인별 정산</th>
+                                    <th class="py-3 px-2 text-center w-20">결제</th>
+                                    <th class="py-3 px-2 text-right">1인당</th>
+                                    <th class="py-3 px-2 text-center w-12"></th>
                                 </tr>
                             </thead>
-                            <tbody id="settlement-body" class="divide-y divide-gray-50 text-gray-700">
-                                <!-- Data will be injected here -->
-                            </tbody>
+                            <tbody id="settlement-body" class="divide-y divide-gray-50 text-gray-700"></tbody>
                         </table>
                     </div>
                 </section>
@@ -141,21 +150,21 @@
             <!-- Right Column -->
             <div class="space-y-8">
                 <!-- 3. Budget Summary -->
-                <section class="card p-6 bg-black text-white">
-                    <h2 class="text-sm font-medium text-gray-400 mb-4 uppercase tracking-wider font-bold">실시간 정산 요약</h2>
+                <section class="card p-6 bg-black text-white shadow-xl">
+                    <h2 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest">정산 대상 요약 (결제완료 건)</h2>
                     <div class="space-y-6">
                         <div>
-                            <p id="total-paid" class="text-3xl font-bold">₩ 0</p>
-                            <p class="text-xs text-gray-400 mt-1 italic">총무가 결제 완료한 총 금액</p>
+                            <p id="total-paid" class="text-3xl font-bold text-white">₩ 0</p>
+                            <p class="text-[10px] text-gray-500 mt-1 uppercase">Total Confirmed Payment</p>
                         </div>
-                        <div class="p-4 bg-gray-900 rounded-lg border border-gray-800">
-                            <p class="text-xs text-gray-400 mb-1">1인당 송금할 금액 (1/3)</p>
-                            <p id="per-person" class="text-xl font-bold text-blue-400">₩ 0</p>
+                        <div class="p-4 bg-zinc-900 rounded-xl border border-zinc-800">
+                            <p class="text-xs text-gray-400 mb-1 font-medium">1인당 송금 필요액 (1/3)</p>
+                            <p id="per-person" class="text-2xl font-bold text-blue-400">₩ 0</p>
                         </div>
                     </div>
                 </section>
 
-                <!-- 4. Checklist (Synced) -->
+                <!-- 4. Checklist -->
                 <section class="card p-6">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-xl font-bold flex items-center gap-2">
@@ -164,77 +173,84 @@
                         </h2>
                         <button onclick="addNewChecklistRow()" class="text-xs font-bold text-blue-600 hover:underline">+ 추가</button>
                     </div>
-                    <div class="space-y-3" id="checklist-container">
-                        <!-- Data will be injected here -->
-                    </div>
+                    <div class="space-y-3" id="checklist-container"></div>
                 </section>
             </div>
         </div>
 
-        <footer class="mt-16 pt-8 border-t border-gray-100 text-center text-gray-400 text-xs">
-            <p>&copy; 2025 K-JAPAN TRIP. Bi-directional Sync Active.</p>
+        <footer class="mt-16 pt-8 border-t border-gray-100 text-center text-gray-400 text-[10px]">
+            <p>DATABASE: GOOGLE APPS SCRIPT | <span id="sync-status">연동됨</span></p>
+            <p class="mt-1 uppercase">ID: AKfycbxcOp990S-LZTzu09ONu75ozPX32u77cevegmC6BO1LivDKqQHC94WJu0CjvNax33xV</p>
         </footer>
     </div>
 
     <script>
-        /**
-         * 연동 가이드:
-         * 1. Google Sheets > 확장 프로그램 > Apps Script 클릭
-         * 2. 아래의 doGet/doPost 스크립트를 작성하여 웹 앱으로 배포
-         * 3. 배포된 URL을 아래 SCRIPT_URL에 넣으세요.
-         */
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcOp990S-LZTzu09ONu75ozPX32u77cevegmC6BO1LivDKqQHC94WJu0CjvNax33xV/exec"; // 여기에 Apps Script 웹앱 URL을 입력하세요.
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcOp990S-LZTzu09ONu75ozPX32u77cevegmC6BO1LivDKqQHC94WJu0CjvNax33xV/exec"; 
 
         let settlementData = [];
         let checklistData = [];
 
-        // 데이터 초기 로드 (현재는 시뮬레이션 데이터를 사용하며 SCRIPT_URL 입력 시 실제 연동)
         async function fetchAllData() {
-            document.getElementById('loading').style.display = 'flex';
-            
-            // 실제 연동 시 SCRIPT_URL에서 fetch 진행
-            // 예시 데이터 (시트 정보 기반)
-            settlementData = [
-                { id: 1, title: "비행기 예약", cost: 968100, isPaid: true },
-                { id: 2, title: "숙소 예약", cost: 668496, isPaid: true },
-                { id: 3, title: "후지큐 버스", cost: 132000, isPaid: true },
-                { id: 4, title: "후지큐 패스", cost: 170700, isPaid: true },
-                { id: 5, title: "시부야 스카이", cost: 76800, isPaid: false }
-            ];
+            toggleLoading(true);
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                
+                // 시트 데이터가 있으면 로드, 없으면 초기 데이터 사용
+                settlementData = (data.settlements && data.settlements.length > 0) ? data.settlements : [
+                    { id: "s1", title: "비행기 예약", cost: 968100, isPaid: true },
+                    { id: "s2", title: "숙소 예약", cost: 668496, isPaid: true },
+                    { id: "s3", title: "후지큐 가는버스 예약", cost: 66000, isPaid: true },
+                    { id: "s4", title: "후지큐 패스 예약", cost: 170700, isPaid: true },
+                    { id: "s5", title: "시부야 스카이 예약", cost: 76800, isPaid: true },
+                    { id: "s6", title: "후지큐 오는버스 예약", cost: 66000, isPaid: false },
+                    { id: "s7", title: "렌트카", cost: 0, isPaid: false }
+                ];
+                checklistData = (data.checklists && data.checklists.length > 0) ? data.checklists : [
+                    { id: "c1", title: "비짓재팬웹 각자", detail: "찬/도/지 완료 확인", checked: true },
+                    { id: "c2", title: "E심 각자", detail: "현지 데이터 확인", checked: true },
+                    { id: "c3", title: "환전", detail: "트래블로그/쏠트래블", checked: false }
+                ];
+                
+                renderAll();
+                document.getElementById('sync-status').innerText = "최신 상태 (동기화 완료)";
+            } catch (e) {
+                console.error("데이터 동기화 오류", e);
+                document.getElementById('sync-status').innerText = "오프라인 모드 (연동 오류)";
+            }
+            toggleLoading(false);
+        }
 
-            checklistData = [
-                { id: 1, title: "비짓재팬웹 (VJW)", detail: "찬/도/지 각자 작성", checked: false },
-                { id: 2, title: "E심 (eSIM)", detail: "각자 구매 확인", checked: true },
-                { id: 3, title: "여권 만료일 확인", detail: "", checked: true },
-                { id: 4, title: "환전", detail: "트래블로그", checked: false }
-            ];
-
+        function renderAll() {
             renderSettlement();
             renderChecklist();
             calculateBudget();
-            
-            setTimeout(() => {
-                document.getElementById('loading').style.display = 'none';
-            }, 500);
         }
 
         function renderSettlement() {
             const body = document.getElementById('settlement-body');
             body.innerHTML = settlementData.map((item, index) => `
-                <tr class="hover:bg-gray-50">
-                    <td class="py-4 px-2">
-                        <input type="text" value="${item.title}" onchange="updateSettlement(${index}, 'title', this.value)" class="bg-transparent border-b border-transparent focus:border-blue-400 outline-none w-full font-medium">
+                <tr class="group hover:bg-gray-50 transition-colors">
+                    <td class="py-3 px-2">
+                        <input type="text" value="${item.title}" onblur="updateSettlement(${index}, 'title', this.value)" 
+                               class="bg-transparent focus:bg-white border-none focus:ring-1 focus:ring-blue-200 rounded px-1 w-full text-sm font-medium">
                     </td>
-                    <td class="py-4 px-2 text-right font-mono font-semibold">
-                        ₩ <input type="number" value="${item.cost}" onchange="updateSettlement(${index}, 'cost', this.value)" class="bg-transparent border-b border-transparent focus:border-blue-400 outline-none text-right w-24">
+                    <td class="py-3 px-2 text-right">
+                        <input type="number" value="${item.cost}" onblur="updateSettlement(${index}, 'cost', this.value)" 
+                               class="bg-transparent focus:bg-white border-none focus:ring-1 focus:ring-blue-200 rounded px-1 text-right w-24 text-sm font-mono font-bold">
                     </td>
-                    <td class="py-4 px-2 text-center">
+                    <td class="py-3 px-2 text-center">
                         <button onclick="toggleSettlementPaid(${index})" class="text-lg">
                             ${item.isPaid ? '<i class="fas fa-check-circle text-green-500"></i>' : '<i class="far fa-circle text-gray-300"></i>'}
                         </button>
                     </td>
-                    <td class="py-4 px-2 text-right text-gray-400 italic">
-                        ₩ ${Math.floor(item.cost / 3).toLocaleString()}
+                    <td class="py-3 px-2 text-right text-gray-400 text-xs">
+                        ${Math.floor(item.cost / 3).toLocaleString()}
+                    </td>
+                    <td class="py-3 px-2 text-center">
+                        <button onclick="deleteSettlementRow(${index})" class="text-gray-200 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
                     </td>
                 </tr>
             `).join('');
@@ -243,22 +259,24 @@
         function renderChecklist() {
             const container = document.getElementById('checklist-container');
             container.innerHTML = checklistData.map((item, index) => `
-                <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors group">
-                    <div onclick="toggleChecklist(${index})" class="checkbox-custom ${item.checked ? 'checked' : ''}">
-                        ${item.checked ? '<i class="fas fa-check"></i>' : ''}
+                <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-xl transition-all group">
+                    <div onclick="toggleChecklist(${index})" class="checkbox-custom ${item.checked ? 'checked' : ''} mt-0.5">
+                        ${item.checked ? '<i class="fas fa-check text-[10px]"></i>' : ''}
                     </div>
                     <div class="flex-1">
-                        <input type="text" value="${item.title}" onchange="updateChecklist(${index}, 'title', this.value)" 
-                               class="text-sm font-bold block bg-transparent border-none focus:ring-0 w-full ${item.checked ? 'line-through opacity-40' : ''}">
-                        <input type="text" value="${item.detail}" onchange="updateChecklist(${index}, 'detail', this.value)" 
-                               class="text-xs text-gray-400 font-medium bg-transparent border-none focus:ring-0 w-full">
+                        <input type="text" value="${item.title}" onblur="updateChecklist(${index}, 'title', this.value)" 
+                               class="text-sm font-bold block bg-transparent border-none focus:ring-0 w-full p-0 ${item.checked ? 'line-through text-gray-400' : ''}">
+                        <input type="text" value="${item.detail}" onblur="updateChecklist(${index}, 'detail', this.value)" 
+                               class="text-[11px] text-gray-400 bg-transparent border-none focus:ring-0 w-full p-0 mt-0.5">
                     </div>
+                    <button onclick="deleteChecklistRow(${index})" class="text-gray-200 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
+                        <i class="fas fa-trash-alt text-xs"></i>
+                    </button>
                 </div>
             `).join('');
         }
 
         function calculateBudget() {
-            // 결제 완료(isPaid: true)인 항목만 합산
             const total = settlementData
                 .filter(item => item.isPaid)
                 .reduce((acc, curr) => acc + Number(curr.cost), 0);
@@ -267,48 +285,80 @@
             document.getElementById('per-person').innerText = `₩ ${Math.floor(total / 3).toLocaleString()}`;
         }
 
-        // --- 업데이트 로직 ---
+        async function sync() {
+            document.getElementById('sync-status').innerText = "동기화 중...";
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ settlements: settlementData, checklists: checklistData })
+                });
+                document.getElementById('sync-status').innerText = "최신 상태 (동기화 완료)";
+            } catch (e) {
+                console.error("동기화 실패", e);
+                document.getElementById('sync-status').innerText = "동기화 오류 발생";
+            }
+        }
+
         function updateSettlement(index, field, value) {
-            settlementData[index][field] = field === 'cost' ? Number(value) : value;
-            calculateBudget();
-            syncToSheet();
+            const val = field === 'cost' ? Number(value) : value;
+            if (settlementData[index][field] !== val) {
+                settlementData[index][field] = val;
+                calculateBudget();
+                sync();
+            }
         }
 
         function toggleSettlementPaid(index) {
             settlementData[index].isPaid = !settlementData[index].isPaid;
             renderSettlement();
             calculateBudget();
-            syncToSheet();
+            sync();
+        }
+
+        function deleteSettlementRow(index) {
+            if(confirm("이 항목을 삭제하시겠습니까?")) {
+                settlementData.splice(index, 1);
+                renderSettlement();
+                calculateBudget();
+                sync();
+            }
+        }
+
+        function addNewSettlementRow() {
+            settlementData.push({ id: Date.now().toString(), title: "새 항목", cost: 0, isPaid: false });
+            renderSettlement();
+            sync();
         }
 
         function updateChecklist(index, field, value) {
-            checklistData[index][field] = value;
-            syncToSheet();
+            if (checklistData[index][field] !== value) {
+                checklistData[index][field] = value;
+                sync();
+            }
         }
 
         function toggleChecklist(index) {
             checklistData[index].checked = !checklistData[index].checked;
             renderChecklist();
-            syncToSheet();
+            sync();
         }
 
-        function addNewSettlementRow() {
-            settlementData.push({ id: Date.now(), title: "새 항목", cost: 0, isPaid: false });
-            renderSettlement();
-            syncToSheet();
+        function deleteChecklistRow(index) {
+            checklistData.splice(index, 1);
+            renderChecklist();
+            sync();
         }
 
         function addNewChecklistRow() {
-            checklistData.push({ id: Date.now(), title: "새 할 일", detail: "", checked: false });
+            checklistData.push({ id: Date.now().toString(), title: "새 할 일", detail: "", checked: false });
             renderChecklist();
-            syncToSheet();
+            sync();
         }
 
-        // 시트로 데이터 전송 (Apps Script Post)
-        async function syncToSheet() {
-            if (!SCRIPT_URL) return;
-            // fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({settlementData, checklistData}) })
-            console.log("시트 동기화 시도 중...", { settlementData, checklistData });
+        function toggleLoading(show) {
+            document.getElementById('loading').style.display = show ? 'flex' : 'none';
         }
 
         window.onload = fetchAllData;
