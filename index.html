@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-JAPAN Travel Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #fcfcfc;
+            color: #1a1a1a;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+        .primary-blue { color: #2563eb; }
+        .bg-primary-blue { background-color: #2563eb; }
+        .border-primary-blue { border-color: #2563eb; }
+        
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+        }
+        .card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .calendar-container {
+            position: relative;
+            padding-bottom: 75%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        .calendar-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .checkbox-custom {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .checkbox-custom.checked {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight mb-2">K-JAPAN Travel Dashboard</h1>
+                <p class="text-gray-500 font-medium">실제 시트 데이터가 반영된 실시간 대시보드입니다.</p>
+            </div>
+            <div class="flex gap-2">
+                <a href="https://docs.google.com/spreadsheets/d/15hhCANDFSHD32TvYmdDBfD86N7TUpUoOyOMPOJGJ-FM/edit" target="_blank" 
+                   class="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 flex items-center gap-2">
+                    <i class="fas fa-table text-green-600"></i> 원본 시트
+                </a>
+                <a href="https://calendar.google.com/calendar" target="_blank" 
+                   class="px-4 py-2 bg-primary-blue text-white rounded-lg text-sm font-semibold hover:bg-blue-700 flex items-center gap-2 shadow-sm">
+                    <i class="fas fa-calendar-alt"></i> 캘린더 관리
+                </a>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Calendar & Settlement -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Calendar Section -->
+                <section class="card p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span class="w-1.5 h-6 bg-primary-blue rounded-full"></span>
+                            여행 일정
+                        </h2>
+                    </div>
+                    <div class="calendar-container">
+                        <iframe src="https://calendar.google.com/calendar/embed?src=c_f3ec8233744c4dfd0260f6441901cc1e75d2c4a53ae206f9fd1ce0b2f16a4875%40group.calendar.google.com&ctz=Asia%2FSeoul&bgcolor=%23ffffff&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0" 
+                                style="border-width:0" frameborder="0" scrolling="no"></iframe>
+                    </div>
+                </section>
+
+                <!-- Settlement Details Section -->
+                <section class="card p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span class="w-1.5 h-6 bg-primary-blue rounded-full"></span>
+                            사용 및 정산 내역
+                        </h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-gray-400 uppercase border-b border-gray-100">
+                                <tr>
+                                    <th class="py-3 px-2">사용 내역</th>
+                                    <th class="py-3 px-2 text-right">총 비용</th>
+                                    <th class="py-3 px-2 text-right">개인별 정산액</th>
+                                    <th class="py-3 px-2 text-right">상태</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50 text-gray-700">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-4 px-2 font-medium">비행기 예약</td>
+                                    <td class="py-4 px-2 text-right">₩ 968,100</td>
+                                    <td class="py-4 px-2 text-right">₩ 322,700</td>
+                                    <td class="py-4 px-2 text-right text-green-500 font-bold">● 완료</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-4 px-2 font-medium">숙소 예약</td>
+                                    <td class="py-4 px-2 text-right">₩ 668,496</td>
+                                    <td class="py-4 px-2 text-right">₩ 222,832</td>
+                                    <td class="py-4 px-2 text-right text-green-500 font-bold">● 완료</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-4 px-2 font-medium">후지큐 버스 (왕복)</td>
+                                    <td class="py-4 px-2 text-right">₩ 132,000</td>
+                                    <td class="py-4 px-2 text-right">₩ 44,000</td>
+                                    <td class="py-4 px-2 text-right text-green-500 font-bold">● 완료</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-4 px-2 font-medium">후지큐 패스 예약</td>
+                                    <td class="py-4 px-2 text-right">₩ 170,700</td>
+                                    <td class="py-4 px-2 text-right">₩ 56,900</td>
+                                    <td class="py-4 px-2 text-right text-green-500 font-bold">● 완료</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-4 px-2 font-medium">시부야 스카이 예약</td>
+                                    <td class="py-4 px-2 text-right">₩ 76,800</td>
+                                    <td class="py-4 px-2 text-right">₩ 25,600</td>
+                                    <td class="py-4 px-2 text-right text-green-500 font-bold">● 완료</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Budget & Checklist -->
+            <div class="space-y-8">
+                <!-- Budget Summary Card -->
+                <section class="card p-6 bg-black text-white">
+                    <h2 class="text-sm font-medium text-gray-400 mb-4 uppercase tracking-wider">전체 정산 요약</h2>
+                    <div class="space-y-6">
+                        <div>
+                            <p class="text-3xl font-bold">₩ 2,016,096</p>
+                            <p class="text-xs text-gray-400 mt-1">총 결제 금액 (누적)</p>
+                        </div>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="p-4 bg-gray-900 rounded-lg border border-gray-800">
+                                <p class="text-xs text-gray-400 mb-1">1인당 총 부담액</p>
+                                <p class="text-xl font-bold text-primary-blue">₩ 672,032</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Checklist Section -->
+                <section class="card p-6">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span class="w-1.5 h-6 bg-primary-blue rounded-full"></span>
+                        체크리스트
+                    </h2>
+                    <div class="space-y-4" id="checklist">
+                        <!-- Items from Sheet -->
+                        <div class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
+                            <div class="checkbox-custom flex items-center justify-center text-white text-xs"></div>
+                            <div>
+                                <span class="text-sm font-bold block">비짓재팬웹 (VJW)</span>
+                                <span class="text-xs text-gray-400 font-medium">찬 / 도 / 지 - 각자 작성</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
+                            <div class="checkbox-custom flex items-center justify-center text-white text-xs"></div>
+                            <div>
+                                <span class="text-sm font-bold block">E심 (eSIM)</span>
+                                <span class="text-xs text-gray-400 font-medium">각자 구매 및 등록 확인</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group border-t border-gray-50 pt-4">
+                            <div class="checkbox-custom flex items-center justify-center text-white text-xs"></div>
+                            <div>
+                                <span class="text-sm font-medium">여권 만료일 확인</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors group">
+                            <div class="checkbox-custom flex items-center justify-center text-white text-xs"></div>
+                            <div>
+                                <span class="text-sm font-medium">환전 (트래블로그/쏠트래블)</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Links -->
+                <section class="card p-6">
+                    <h2 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-widest">Quick Access</h2>
+                    <div class="space-y-2">
+                        <a href="https://vjw-lp.digital.go.jp/" target="_blank" class="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-blue-50 transition-colors">
+                            <span class="text-xs font-bold">Visit Japan Web</span>
+                            <i class="fas fa-external-link-alt text-[10px] text-gray-400"></i>
+                        </a>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-16 pt-8 border-t border-gray-100 text-center text-gray-400 text-xs">
+            <p>&copy; 2025 K-JAPAN TRIP. Data synced from Google Spreadsheets.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Simple Interaction for Checklist
+        document.querySelectorAll('.checkbox-custom').forEach(box => {
+            box.addEventListener('click', function() {
+                this.classList.toggle('checked');
+                const textContainer = this.nextElementSibling;
+                if(this.classList.contains('checked')) {
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    textContainer.classList.add('opacity-40');
+                } else {
+                    this.innerHTML = '';
+                    textContainer.classList.remove('opacity-40');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
