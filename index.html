@@ -47,9 +47,15 @@
         }
         .timeline-item {
             position: relative;
-            padding-left: 2rem;
-            padding-bottom: 1.5rem;
-            border-left: 2px solid #e5e7eb;
+            padding-left: 1.5rem;
+            padding-bottom: 1rem;
+            border-left: 2px solid #eff6ff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .timeline-item:hover {
+            border-left-color: #2563eb;
+            background-color: #f8fafc;
         }
         .timeline-item::before {
             content: '';
@@ -57,14 +63,51 @@
             left: -7px; top: 0;
             width: 12px; height: 12px;
             border-radius: 50%;
-            background: #2563eb;
+            background: #dbeafe;
+            border: 2px solid #2563eb;
+        }
+        /* Modal Style */
+        #event-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
 <body class="p-4 md:p-8">
+    <!-- 로딩 오버레이 -->
     <div id="loading" class="loading-overlay">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         <p class="mt-4 font-semibold text-gray-600">데이터를 시트와 동기화 중입니다...</p>
+    </div>
+
+    <!-- 상세 일정 모달 -->
+    <div id="event-modal" onclick="closeModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-sm w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-start mb-4">
+                <h3 id="modal-title" class="text-xl font-bold text-gray-900"></h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-center gap-3 text-sm text-blue-600 font-semibold">
+                    <i class="fas fa-clock w-4 text-center"></i>
+                    <span id="modal-time"></span>
+                </div>
+                <div class="flex items-start gap-3 text-sm text-gray-600">
+                    <i class="fas fa-map-marker-alt w-4 text-center mt-1"></i>
+                    <span id="modal-location"></span>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-xl text-sm leading-relaxed text-gray-700">
+                    <i class="fas fa-info-circle mr-1 text-gray-400"></i>
+                    <span id="modal-desc"></span>
+                </div>
+            </div>
+            <button onclick="closeModal()" class="w-full mt-6 py-3 bg-gray-900 text-white rounded-xl font-bold">확인</button>
+        </div>
     </div>
 
     <div class="max-w-7xl mx-auto">
@@ -72,7 +115,7 @@
         <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight mb-2">K-JAPAN Travel Dashboard</h1>
-                <p class="text-gray-500 font-medium italic">Google Apps Script 실시간 연동 중</p>
+                <p class="text-gray-500 font-medium italic">Google Apps Script 실시간 동기화 (12/26-12/29)</p>
             </div>
             <div class="flex gap-2">
                 <button onclick="fetchAllData()" class="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 flex items-center gap-2 transition-all">
@@ -86,42 +129,22 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left & Middle: Timeline & Settlements -->
             <div class="lg:col-span-2 space-y-8">
-                <!-- 1. 커스텀 일정표 -->
+                <!-- 여행 일정 (12/26 - 12/29) -->
                 <section class="card p-6">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-xl font-bold flex items-center gap-2">
                             <span class="w-1.5 h-6 bg-primary-blue rounded-full"></span>
-                            여행 타임라인 (12/26 - 12/29)
+                            상세 일정 (클릭 시 상세정보)
                         </h2>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-4">
-                            <h3 class="font-bold text-blue-600 flex items-center gap-2"><i class="fas fa-plane-departure"></i> 12/26 (목) - 출발</h3>
-                            <div class="timeline-item">
-                                <p class="text-sm font-bold">공항 미팅 및 출국</p>
-                                <p class="text-xs text-gray-400">나리타 도착 및 시부야 이동</p>
-                            </div>
-                            <div class="timeline-item border-none">
-                                <p class="text-sm font-bold">시부야 스카이 관람</p>
-                                <p class="text-xs text-gray-400">일몰 시간 맞춰 입장</p>
-                            </div>
-                        </div>
-                        <div class="space-y-4">
-                            <h3 class="font-bold text-blue-600 flex items-center gap-2"><i class="fas fa-mountain"></i> 12/27 (금) - 후지큐</h3>
-                            <div class="timeline-item">
-                                <p class="text-sm font-bold">후지큐행 버스 탑승</p>
-                                <p class="text-xs text-gray-400">신주쿠 버스터미널 출발</p>
-                            </div>
-                            <div class="timeline-item border-none">
-                                <p class="text-sm font-bold">후지큐 하이랜드</p>
-                                <p class="text-xs text-gray-400">오는 버스 예약 시간 엄수</p>
-                            </div>
-                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10" id="schedule-container">
+                        <!-- JS로 렌더링 -->
                     </div>
                 </section>
 
-                <!-- 2. 정산 내역 관리 -->
+                <!-- 정산 내역 -->
                 <section class="card p-6">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-xl font-bold flex items-center gap-2">
@@ -134,9 +157,9 @@
                         <table class="w-full text-sm text-left">
                             <thead class="text-xs text-gray-400 uppercase border-b border-gray-100">
                                 <tr>
-                                    <th class="py-3 px-2">사용 내역</th>
-                                    <th class="py-3 px-2 text-right">총 비용</th>
-                                    <th class="py-3 px-2 text-center w-20">결제</th>
+                                    <th class="py-3 px-2">항목</th>
+                                    <th class="py-3 px-2 text-right">금액</th>
+                                    <th class="py-3 px-2 text-center w-20">결제완료</th>
                                     <th class="py-3 px-2 text-right">1인당</th>
                                     <th class="py-3 px-2 text-center w-12"></th>
                                 </tr>
@@ -147,9 +170,8 @@
                 </section>
             </div>
 
-            <!-- Right Column -->
+            <!-- Right Column: Summary & Checklist -->
             <div class="space-y-8">
-                <!-- 3. Budget Summary -->
                 <section class="card p-6 bg-black text-white shadow-xl">
                     <h2 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest">정산 대상 요약 (결제완료 건)</h2>
                     <div class="space-y-6">
@@ -164,7 +186,6 @@
                     </div>
                 </section>
 
-                <!-- 4. Checklist -->
                 <section class="card p-6">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-xl font-bold flex items-center gap-2">
@@ -179,13 +200,56 @@
         </div>
 
         <footer class="mt-16 pt-8 border-t border-gray-100 text-center text-gray-400 text-[10px]">
-            <p>DATABASE: GOOGLE APPS SCRIPT | <span id="sync-status">연동됨</span></p>
-            <p class="mt-1 uppercase">ID: AKfycbxcOp990S-LZTzu09ONu75ozPX32u77cevegmC6BO1LivDKqQHC94WJu0CjvNax33xV</p>
+            <p>SYNCED WITH GOOGLE APPS SCRIPT</p>
+            <p id="last-sync-time" class="mt-1 uppercase">-</p>
         </footer>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcOp990S-LZTzu09ONu75ozPX32u77cevegmC6BO1LivDKqQHC94WJu0CjvNax33xV/exec"; 
+
+        // 12/26 ~ 12/29 전체 일정 데이터 (시간, 제목, 설명, 위치 포함)
+        const travelSchedule = [
+            {
+                date: "12/26 (목)",
+                icon: "fa-plane-departure",
+                events: [
+                    { time: "07:00", title: "인천공항 미팅", location: "인천공항 제1터미널", desc: "체크인 및 수하물 위탁, 포켓와이파이 수령" },
+                    { time: "10:00", title: "나리타행 출국", location: "인천 -> 나리타", desc: "항공편 정보 확인 및 기내식 이용" },
+                    { time: "13:30", title: "숙소 이동", location: "나리타 -> 시부야", desc: "넥스(N'EX) 이용 시부야역 이동 및 체크인" },
+                    { time: "17:30", title: "시부야 스카이", location: "시부야 스크램블 스퀘어", desc: "야경 관람 및 사진 촬영 (예약 시간 엄수)" }
+                ]
+            },
+            {
+                date: "12/27 (금)",
+                icon: "fa-mountain",
+                events: [
+                    { time: "08:00", title: "신주쿠 이동", location: "신주쿠 버스터미널(바스타)", desc: "후지큐 하이랜드행 버스 탑승 준비" },
+                    { time: "10:00", title: "후지큐 하이랜드", location: "야마나시현", desc: "놀이기구 이용 및 점심 식사" },
+                    { time: "18:00", title: "도쿄 복귀 버스", location: "후지큐 하이랜드 역", desc: "신주쿠행 복귀 버스 탑승 (지연 주의)" },
+                    { time: "20:30", title: "저녁 식사", location: "신주쿠/시부야 인근", desc: "현지 맛집 탐방" }
+                ]
+            },
+            {
+                date: "12/28 (토)",
+                icon: "fa-camera",
+                events: [
+                    { time: "09:30", title: "아키하바라 탐방", location: "아키하바라역 인근", desc: "전자상가 및 굿즈 쇼핑" },
+                    { time: "13:00", title: "긴자 쇼핑", location: "긴자 거리", desc: "명품 거리 구경 및 애프터눈 티" },
+                    { time: "16:00", title: "오다이바 이동", location: "팀랩 플래닛 도쿄", desc: "전시 관람 및 자유 시간" },
+                    { time: "19:00", title: "오다이바 야경", location: "자유의 여신상 앞", desc: "레인보우 브릿지 관람 및 석식" }
+                ]
+            },
+            {
+                date: "12/29 (일)",
+                icon: "fa-plane-arrival",
+                events: [
+                    { time: "10:00", title: "마지막 쇼핑/체크아웃", location: "시부야 인근", desc: "돈키호테 기념품 구매 및 짐 정리" },
+                    { time: "13:00", title: "나리타 공항 이동", location: "나리타 공항", desc: "면세점 이용 및 출국 수속" },
+                    { time: "16:30", title: "인천행 출국", location: "나리타 -> 인천", desc: "여행 종료 및 귀국" }
+                ]
+            }
+        ];
 
         let settlementData = [];
         let checklistData = [];
@@ -196,7 +260,7 @@
                 const response = await fetch(SCRIPT_URL);
                 const data = await response.json();
                 
-                // 시트 데이터가 있으면 로드, 없으면 초기 데이터 사용
+                // 시트 데이터 반영 (없으면 최신 CSV 기준 데이터 사용)
                 settlementData = (data.settlements && data.settlements.length > 0) ? data.settlements : [
                     { id: "s1", title: "비행기 예약", cost: 968100, isPaid: true },
                     { id: "s2", title: "숙소 예약", cost: 668496, isPaid: true },
@@ -207,24 +271,60 @@
                     { id: "s7", title: "렌트카", cost: 0, isPaid: false }
                 ];
                 checklistData = (data.checklists && data.checklists.length > 0) ? data.checklists : [
-                    { id: "c1", title: "비짓재팬웹 각자", detail: "찬/도/지 완료 확인", checked: true },
-                    { id: "c2", title: "E심 각자", detail: "현지 데이터 확인", checked: true },
-                    { id: "c3", title: "환전", detail: "트래블로그/쏠트래블", checked: false }
+                    { id: "c1", title: "비짓재팬웹 각자", detail: "완료 확인 (찬/도/지)", checked: true },
+                    { id: "c2", title: "E심 각자", detail: "구매 및 설정 확인", checked: true },
+                    { id: "c3", title: "환전", detail: "트래블로그 엔화 충전", checked: false }
                 ];
                 
                 renderAll();
-                document.getElementById('sync-status').innerText = "최신 상태 (동기화 완료)";
             } catch (e) {
-                console.error("데이터 동기화 오류", e);
-                document.getElementById('sync-status').innerText = "오프라인 모드 (연동 오류)";
+                console.error("동기화 오류", e);
+                renderAll();
             }
             toggleLoading(false);
+            document.getElementById('last-sync-time').innerText = "LAST SYNC: " + new Date().toLocaleString();
         }
 
         function renderAll() {
+            renderSchedule();
             renderSettlement();
             renderChecklist();
             calculateBudget();
+        }
+
+        function renderSchedule() {
+            const container = document.getElementById('schedule-container');
+            container.innerHTML = travelSchedule.map(day => `
+                <div class="space-y-4">
+                    <h3 class="font-bold text-blue-600 flex items-center gap-2 pb-2 border-b border-blue-50">
+                        <i class="fas ${day.icon}"></i> ${day.date}
+                    </h3>
+                    <div class="space-y-1">
+                        ${day.events.map(ev => `
+                            <div class="timeline-item" onclick="openModal('${ev.title}', '${ev.time}', '${ev.location}', '${ev.desc}')">
+                                <div class="flex justify-between items-baseline">
+                                    <p class="text-xs font-mono font-bold text-blue-500">${ev.time}</p>
+                                </div>
+                                <p class="text-sm font-bold text-gray-800">${ev.title}</p>
+                                <p class="text-[10px] text-gray-400 truncate">${ev.location}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 모달 제어
+        function openModal(title, time, loc, desc) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-time').innerText = time;
+            document.getElementById('modal-location').innerText = loc;
+            document.getElementById('modal-desc').innerText = desc;
+            document.getElementById('event-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('event-modal').style.display = 'none';
         }
 
         function renderSettlement() {
@@ -244,11 +344,11 @@
                             ${item.isPaid ? '<i class="fas fa-check-circle text-green-500"></i>' : '<i class="far fa-circle text-gray-300"></i>'}
                         </button>
                     </td>
-                    <td class="py-3 px-2 text-right text-gray-400 text-xs">
+                    <td class="py-3 px-2 text-right text-gray-400 text-xs font-mono">
                         ${Math.floor(item.cost / 3).toLocaleString()}
                     </td>
                     <td class="py-3 px-2 text-center">
-                        <button onclick="deleteSettlementRow(${index})" class="text-gray-200 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
+                        <button onclick="deleteSettlementRow(${index})" class="text-gray-200 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
                             <i class="fas fa-times-circle"></i>
                         </button>
                     </td>
@@ -286,7 +386,6 @@
         }
 
         async function sync() {
-            document.getElementById('sync-status').innerText = "동기화 중...";
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -294,10 +393,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ settlements: settlementData, checklists: checklistData })
                 });
-                document.getElementById('sync-status').innerText = "최신 상태 (동기화 완료)";
             } catch (e) {
                 console.error("동기화 실패", e);
-                document.getElementById('sync-status').innerText = "동기화 오류 발생";
             }
         }
 
