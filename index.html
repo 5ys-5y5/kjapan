@@ -24,7 +24,7 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.9);
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -41,13 +41,30 @@
             top: 0; left: 0; width: 100%; height: 100%;
             border: 0;
         }
+        .editable-input {
+            background: transparent;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+        .editable-input:hover {
+            border-color: #e5e7eb;
+            background: #f9fafb;
+        }
+        .editable-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
     <!-- 로딩 오버레이 -->
     <div id="loading" class="loading-overlay">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p class="mt-4 font-semibold text-gray-600">구글 캘린더 및 시트 데이터 로드 중...</p>
+        <p class="mt-4 font-semibold text-gray-600">데이터 동기화 중...</p>
     </div>
 
     <div class="max-w-7xl mx-auto">
@@ -55,11 +72,11 @@
         <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-100 pb-6">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight mb-2">K-JAPAN Real-time Dashboard</h1>
-                <p class="text-gray-500 font-medium italic">구글 캘린더 및 시트 연동 실시간 대시보드</p>
+                <p class="text-gray-500 font-medium italic">구글 캘린더 및 시트 양방향 연동 대시보드</p>
             </div>
             <div class="flex gap-2">
                 <button onclick="loadAllData()" class="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 flex items-center gap-2 transition-all">
-                    <i class="fas fa-sync-alt"></i> 데이터 새로고침
+                    <i class="fas fa-sync-alt"></i> 새로고침
                 </button>
                 <a href="https://docs.google.com/spreadsheets/d/15hhCANDFSHD32TvYmdDBfD86N7TUpUoOyOMPOJGJ-FM/edit" target="_blank" 
                    class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 flex items-center gap-2 shadow-sm">
@@ -88,8 +105,9 @@
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-xl font-bold flex items-center gap-2">
                             <span class="w-1.5 h-6 bg-blue-600 rounded-full"></span>
-                            정산 현황
+                            정산 현황 (수정 가능)
                         </h2>
+                        <button onclick="addNewSettlementRow()" class="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold hover:bg-blue-100">+ 항목 추가</button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left">
@@ -99,11 +117,11 @@
                                     <th class="py-3 px-2 text-right">총 비용</th>
                                     <th class="py-3 px-2 text-center">결제</th>
                                     <th class="py-3 px-2 text-right">1인당</th>
-                                    <th class="py-3 px-2 text-center">상태</th>
+                                    <th class="py-3 px-2 text-center w-10"></th>
                                 </tr>
                             </thead>
                             <tbody id="settlement-body" class="divide-y divide-gray-50 text-gray-700">
-                                <!-- 시트 데이터 로드 영역 -->
+                                <!-- 데이터 로드 영역 -->
                             </tbody>
                         </table>
                     </div>
@@ -118,10 +136,10 @@
                     <div class="space-y-6">
                         <div>
                             <p id="total-paid" class="text-3xl font-bold text-white">₩ 0</p>
-                            <p class="text-[10px] text-gray-500 mt-1">TOTAL CONFIRMED (결제완료 건)</p>
+                            <p class="text-[10px] text-gray-500 mt-1 uppercase">Total Confirmed Payment</p>
                         </div>
                         <div class="p-4 bg-gray-800 rounded-xl border border-gray-700">
-                            <p class="text-xs text-gray-400 mb-1 font-medium">1인당 송금 필요액</p>
+                            <p class="text-xs text-gray-400 mb-1 font-medium">1인당 송금 필요액 (1/3)</p>
                             <p id="per-person" class="text-2xl font-bold text-blue-400">₩ 0</p>
                         </div>
                     </div>
@@ -136,27 +154,31 @@
                         </h2>
                     </div>
                     <div class="space-y-4" id="checklist-container">
-                        <!-- 시트 데이터 로드 영역 -->
+                        <!-- 데이터 로드 영역 -->
                     </div>
                 </section>
             </div>
         </div>
 
         <footer class="mt-16 pt-8 border-t border-gray-100 text-center text-gray-400 text-[10px]">
-            <p>DATA SOURCE: GOOGLE SHEETS & GOOGLE CALENDAR</p>
+            <p>AUTO-SYNC ENABLED: CHANGES SAVED TO GOOGLE SHEETS</p>
             <p id="last-sync-time" class="mt-1 uppercase">-</p>
         </footer>
     </div>
 
     <script>
         const SPREADSHEET_ID = '15hhCANDFSHD32TvYmdDBfD86N7TUpUoOyOMPOJGJ-FM';
-        
-        // 시트 데이터 가져오기 (gviz API)
+        // 이전에 생성했던 구글 앱스 스크립트 배포 URL (저장용)
+        const SAVE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcOp990S-LZTzu09ONu75ozPX32u77cevegmC6BO1LivDKqQHC94WJu0CjvNax33xV/exec';
+
+        let settlementData = [];
+        let checklistData = [];
+
+        // 데이터 로드
         async function fetchSheetData(gid) {
             const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&tq=select%20*&gid=${gid}`;
             const response = await fetch(url);
             const text = await response.text();
-            // gviz 응답에서 JSON 부분만 추출
             const json = JSON.parse(text.substring(47, text.length - 2));
             return json.table.rows;
         }
@@ -164,95 +186,178 @@
         async function loadAllData() {
             toggleLoading(true);
             try {
-                // 1. 정산 데이터 로드 (gid=0)
-                const settlementRows = await fetchSheetData(0);
-                renderSettlements(settlementRows);
+                const sRows = await fetchSheetData(0);
+                const cRows = await fetchSheetData(692599045);
+                
+                // 정산 데이터 파싱
+                settlementData = sRows.filter((r, i) => i > 0 && r.c[0]).map(r => ({
+                    title: r.c[0] ? String(r.c[0].v) : '',
+                    isPaid: r.c[1] ? (r.c[1].v === true || String(r.c[1].v).toUpperCase() === 'TRUE') : false,
+                    cost: r.c[2] ? (typeof r.c[2].v === 'number' ? r.c[2].v : 0) : 0,
+                    perPerson: r.c[3] ? (typeof r.c[3].v === 'number' ? r.c[3].v : 0) : 0,
+                    isDone: r.c[4] ? (r.c[4].v === true || String(r.c[4].v).toUpperCase() === 'TRUE') : false
+                }));
 
-                // 2. 체크리스트 데이터 로드 (gid=692599045)
-                const checklistRows = await fetchSheetData(692599045);
-                renderChecklist(checklistRows);
+                // 체크리스트 데이터 파싱
+                checklistData = cRows.filter((r, i) => i > 0 && r.c[0]).map(r => ({
+                    task: r.c[0] ? String(r.c[0].v) : '',
+                    chan: r.c[1] ? (r.c[1].v === true || String(r.c[1].v).toUpperCase() === 'TRUE') : false,
+                    do: r.c[2] ? (r.c[2].v === true || String(r.c[2].v).toUpperCase() === 'TRUE') : false,
+                    ji: r.c[3] ? (r.c[3].v === true || String(r.c[3].v).toUpperCase() === 'TRUE') : false
+                }));
 
+                renderSettlements();
+                renderChecklist();
+                calculateTotals();
                 document.getElementById('last-sync-time').innerText = "LAST SYNC: " + new Date().toLocaleString();
-            } catch (error) {
-                console.error("데이터 로드 오류:", error);
+            } catch (e) {
+                console.error("로드 오류", e);
             } finally {
                 toggleLoading(false);
             }
         }
 
-        function renderSettlements(rows) {
+        // 정산 렌더링
+        function renderSettlements() {
             const body = document.getElementById('settlement-body');
-            let html = '';
-            let totalConfirmed = 0;
-
-            // 헤더 제외 (첫 줄이 헤더일 경우)
-            rows.forEach((row, index) => {
-                const cols = row.c;
-                if (!cols[0] || !cols[0].v || index === 0) return;
-
-                const title = cols[0] ? cols[0].v : '-';
-                const isPaid = cols[1] ? (cols[1].v === true || cols[1].v === "TRUE") : false;
-                const cost = cols[2] ? (typeof cols[2].v === 'number' ? cols[2].v : parseFloat(cols[2].v.replace(/,/g, ''))) : 0;
-                const perPerson = cols[3] ? (typeof cols[3].v === 'number' ? cols[3].v : 0) : Math.floor(cost / 3);
-                const isDone = cols[4] ? (cols[4].v === true || cols[4].v === "TRUE") : false;
-
-                if (isPaid) totalConfirmed += cost;
-
-                html += `
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="py-4 px-2 font-medium">${title}</td>
-                        <td class="py-4 px-2 text-right font-mono">₩${cost.toLocaleString()}</td>
-                        <td class="py-4 px-2 text-center">
-                            <span class="${isPaid ? 'text-green-500' : 'text-gray-300'}">
-                                <i class="fas ${isPaid ? 'fa-check-circle' : 'fa-minus-circle'}"></i>
-                            </span>
-                        </td>
-                        <td class="py-4 px-2 text-right text-gray-500 text-xs font-mono">₩${perPerson.toLocaleString()}</td>
-                        <td class="py-4 px-2 text-center">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isDone ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'}">
-                                ${isDone ? '정산완료' : '진행중'}
-                            </span>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            body.innerHTML = html;
-            document.getElementById('total-paid').innerText = `₩ ${totalConfirmed.toLocaleString()}`;
-            document.getElementById('per-person').innerText = `₩ ${Math.floor(totalConfirmed / 3).toLocaleString()}`;
+            body.innerHTML = settlementData.map((item, i) => `
+                <tr class="group hover:bg-gray-50 transition-colors">
+                    <td class="py-3 px-2">
+                        <input type="text" value="${item.title}" onblur="updateSettlement(${i}, 'title', this.value)" 
+                               class="editable-input w-full font-medium text-sm">
+                    </td>
+                    <td class="py-3 px-2 text-right">
+                        <input type="number" value="${item.cost}" onblur="updateSettlement(${i}, 'cost', this.value)" 
+                               class="editable-input w-24 text-right font-mono font-bold text-sm">
+                    </td>
+                    <td class="py-3 px-2 text-center">
+                        <button onclick="toggleSettlementBit(${i}, 'isPaid')" class="text-lg">
+                            <i class="fas ${item.isPaid ? 'fa-check-circle text-green-500' : 'fa-minus-circle text-gray-200'}"></i>
+                        </button>
+                    </td>
+                    <td class="py-3 px-2 text-right text-gray-400 text-xs font-mono">
+                        ₩${Math.floor(item.cost / 3).toLocaleString()}
+                    </td>
+                    <td class="py-3 px-2 text-center">
+                        <button onclick="deleteSettlementRow(${i})" class="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        function renderChecklist(rows) {
+        // 체크리스트 렌더링
+        function renderChecklist() {
             const container = document.getElementById('checklist-container');
-            let html = '';
-
-            rows.forEach((row, index) => {
-                const cols = row.c;
-                if (!cols[0] || index === 0) return;
-
-                const task = cols[0].v;
-                const chan = cols[1] ? (cols[1].v === true || cols[1].v === "TRUE") : false;
-                const do_ = cols[2] ? (cols[2].v === true || cols[2].v === "TRUE") : false;
-                const ji = cols[3] ? (cols[3].v === true || cols[3].v === "TRUE") : false;
-
-                const allChecked = chan && do_ && ji;
-
-                html += `
-                    <div class="p-3 border border-gray-100 rounded-xl hover:shadow-sm transition-all ${allChecked ? 'bg-gray-50 opacity-60' : 'bg-white'}">
+            container.innerHTML = checklistData.map((item, i) => {
+                const allDone = item.chan && item.do && item.ji;
+                return `
+                    <div class="p-3 border border-gray-100 rounded-xl transition-all ${allDone ? 'bg-gray-50 opacity-60' : 'bg-white shadow-sm'}">
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-bold ${allChecked ? 'line-through text-gray-400' : 'text-gray-800'}">${task}</span>
-                            ${allChecked ? '<span class="text-[10px] text-blue-600 font-bold">ALL DONE</span>' : ''}
+                            <input type="text" value="${item.task}" onblur="updateChecklist(${i}, 'task', this.value)" 
+                                   class="editable-input flex-1 text-sm font-bold ${allDone ? 'line-through text-gray-400' : ''}">
+                            <button onclick="deleteChecklistRow(${i})" class="text-gray-200 hover:text-red-400 ml-2">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
                         </div>
                         <div class="flex gap-2">
-                            <span class="px-2 py-1 rounded-md text-[10px] font-medium border ${chan ? 'bg-blue-50 border-blue-100 text-blue-600' : 'bg-gray-50 border-gray-100 text-gray-400'}">찬</span>
-                            <span class="px-2 py-1 rounded-md text-[10px] font-medium border ${do_ ? 'bg-blue-50 border-blue-100 text-blue-600' : 'bg-gray-50 border-gray-100 text-gray-400'}">도</span>
-                            <span class="px-2 py-1 rounded-md text-[10px] font-medium border ${ji ? 'bg-blue-50 border-blue-100 text-blue-600' : 'bg-gray-50 border-gray-100 text-gray-400'}">지</span>
+                            ${['chan', 'do', 'ji'].map(key => `
+                                <button onclick="toggleChecklistBit(${i}, '${key}')" 
+                                        class="px-3 py-1 rounded-md text-[10px] font-bold border transition-all 
+                                        ${item[key] ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-gray-100 text-gray-400 hover:border-gray-300'}">
+                                    ${key === 'chan' ? '찬' : key === 'do' ? '도' : '지'}
+                                </button>
+                            `).join('')}
                         </div>
                     </div>
                 `;
-            });
+            }).join('');
+        }
 
-            container.innerHTML = html || '<p class="text-center text-gray-400 text-sm py-4">체크리스트가 비어있습니다.</p>';
+        // 요약 계산
+        function calculateTotals() {
+            const total = settlementData.reduce((acc, curr) => acc + (curr.isPaid ? Number(curr.cost) : 0), 0);
+            document.getElementById('total-paid').innerText = `₩ ${total.toLocaleString()}`;
+            document.getElementById('per-person').innerText = `₩ ${Math.floor(total / 3).toLocaleString()}`;
+        }
+
+        // 데이터 업데이트 및 저장
+        async function saveData() {
+            toggleLoading(true);
+            try {
+                await fetch(SAVE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        settlements: settlementData,
+                        checklists: checklistData
+                    })
+                });
+                document.getElementById('last-sync-time').innerText = "SAVED: " + new Date().toLocaleString();
+            } catch (e) {
+                console.error("저장 실패", e);
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        // 제어 함수들
+        function updateSettlement(i, field, val) {
+            const oldVal = settlementData[i][field];
+            const newVal = field === 'cost' ? Number(val) : val;
+            if (oldVal !== newVal) {
+                settlementData[i][field] = newVal;
+                calculateTotals();
+                saveData();
+                renderSettlements();
+            }
+        }
+
+        function toggleSettlementBit(i, field) {
+            settlementData[i][field] = !settlementData[i][field];
+            renderSettlements();
+            calculateTotals();
+            saveData();
+        }
+
+        function addNewSettlementRow() {
+            settlementData.push({ title: "새 항목", cost: 0, isPaid: false, perPerson: 0, isDone: false });
+            renderSettlements();
+            saveData();
+        }
+
+        function deleteSettlementRow(i) {
+            if(confirm("이 항목을 삭제할까요?")) {
+                settlementData.splice(i, 1);
+                renderSettlements();
+                calculateTotals();
+                saveData();
+            }
+        }
+
+        function updateChecklist(i, field, val) {
+            if (checklistData[i][field] !== val) {
+                checklistData[i][field] = val;
+                saveData();
+                renderChecklist();
+            }
+        }
+
+        function toggleChecklistBit(i, field) {
+            checklistData[i][field] = !checklistData[key === 'do' ? 'do' : field]; // JS key mapping
+            checklistData[i][field] = !checklistData[i][field];
+            renderChecklist();
+            saveData();
+        }
+
+        function deleteChecklistRow(i) {
+            if(confirm("이 체크리스트를 삭제할까요?")) {
+                checklistData.splice(i, 1);
+                renderChecklist();
+                saveData();
+            }
         }
 
         function toggleLoading(show) {
