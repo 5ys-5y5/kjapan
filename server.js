@@ -8,7 +8,8 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
+// 루트 경로와 index.html 모두 API 키 교체
+const serveIndexWithApiKey = (req, res) => {
   const html = fs.readFileSync(
     path.join(process.cwd(), "public/index.html"),
     "utf-8"
@@ -20,7 +21,10 @@ app.get("/", (req, res) => {
   );
 
   res.send(rendered);
-});
+};
+
+app.get("/", serveIndexWithApiKey);
+app.get("/index.html", serveIndexWithApiKey);
 
 app.use(express.static("public"));
 
